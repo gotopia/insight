@@ -51,9 +51,9 @@ const (
 //
 func (tok Token) Precedence() int {
 	switch tok {
-	case OR:
-		return 1
 	case AND:
+		return 1
+	case OR:
 		return 2
 	case EQL, NEQ, GTR, LSS, GEQ, LEQ, CONTAIN, NOTCONTAIN, MATCH, NOTMATCH:
 		return 3
