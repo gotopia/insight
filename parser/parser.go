@@ -20,7 +20,6 @@ func New(src []byte) *Parser {
 	p := &Parser{
 		scanner: scanner,
 	}
-	p.next()
 	return p
 }
 
@@ -31,6 +30,9 @@ func (p *Parser) Parse() (e ast.Expr, err error) {
 			err = er.(error)
 		}
 	}()
+	if p.pos == 0 {
+		p.next()
+	}
 	e = p.parseBinaryExpr(token.LowestPrec + 1)
 	return
 }

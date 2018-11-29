@@ -14,7 +14,6 @@ type ParsingError interface {
 }
 
 type parsingError struct {
-	code       int
 	pos        int
 	unexpected string
 	expectings []token.Token

@@ -25,7 +25,6 @@ func New(src []byte) *Scanner {
 		src: src,
 		lhs: true,
 	}
-	s.next()
 	return s
 }
 
@@ -137,7 +136,7 @@ func (s *Scanner) next() {
 }
 
 func (s *Scanner) skipWhitespace() {
-	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' || s.ch == '\r' {
+	for s.ch == rune(0) || s.ch == ' ' || s.ch == '\t' || s.ch == '\n' || s.ch == '\r' {
 		s.next()
 	}
 }
