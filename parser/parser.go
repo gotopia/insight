@@ -34,6 +34,10 @@ func (p *Parser) Parse() (e ast.Expr, err error) {
 		p.next()
 	}
 	e = p.parseBinaryExpr(token.LowestPrec + 1)
+	if _, ok := e.(*ast.BinaryExpr); !ok {
+		err = newParsingError(p.pos, p.tok.String())
+		return
+	}
 	return
 }
 

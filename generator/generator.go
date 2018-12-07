@@ -17,13 +17,8 @@ func New(expr ast.Expr) *Generator {
 	}
 }
 
-// Generate generates a SQL query and arguments from ast.
+// Generate a SQL query and arguments from ast.
 func (g *Generator) Generate() (query string, args []string, err error) {
-	defer func() {
-		if er := recover(); er != nil {
-			err = er.(error)
-		}
-	}()
 	query = g.generate(g.e)
 	args = g.args
 	return
