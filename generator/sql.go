@@ -7,10 +7,14 @@ import (
 )
 
 func buildSQL(x string, op token.Token, y string) string {
-	if op == token.CONTAIN || op == token.NOTCONTAIN {
+	switch op {
+	case token.CONTAIN, token.NOTCONTAIN:
 		return fmt.Sprintf("%v(%v, %v)", operators[op], x, y)
+	case token.OR:
+		return fmt.Sprintf("(%v %v %v)", x, operators[op], y)
+	default:
+		return fmt.Sprintf("%v %v %v", x, operators[op], y)
 	}
-	return fmt.Sprintf("(%v %v %v)", x, operators[op], y)
 }
 
 type formatter func(x string, y string) string

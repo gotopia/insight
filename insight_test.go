@@ -5,5 +5,4 @@ import (
 )
 
 func TestFilter(t *testing.T) {
-	query, args, err := Filter("")
 }

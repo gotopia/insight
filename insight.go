@@ -7,8 +7,35 @@ import (
 	"github.com/gotopia/insight/parser"
 )
 
-// Filter generates a SQL query and arguments.
-func Filter(filter string) (query string, args []string, err error) {
+// Insight holds the insight's internal state.
+type Insight struct {
+	params []string
+}
+
+func new() *Insight {
+	return &Insight{
+		params: []string{},
+	}
+}
+
+// Permit returns a new insight instance with permitted params.
+func Permit(params ...string) *Insight {
+	return new().Permit(params...)
+}
+
+// Permit returns a new insight instance with permitted params.
+func (i *Insight) Permit(params ...string) *Insight {
+	i.params = append(i.params, params...)
+	return i
+}
+
+// Filter generates a SQL clause and arguments. If permitted params is not set, it means any parameters are permitted.
+func Filter(filter string) (clause string, args []interface{}, err error) {
+	return new().Filter(filter)
+}
+
+// Filter generates a SQL clause and arguments. If permitted params is not set, it means any parameters are permitted.
+func (i *Insight) Filter(filter string) (clause string, args []interface{}, err error) {
 	if strings.TrimSpace(filter) == "" {
 		return
 	}
@@ -16,5 +43,6 @@ func Filter(filter string) (query string, args []string, err error) {
 	if err != nil {
 		return
 	}
-	return generator.New(expr).Generate()
+	clause, args = generator.New(expr, i.params).Generate()
+	return
 }
