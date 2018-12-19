@@ -3,14 +3,16 @@ package ast
 // Value node represents a value node .
 type Value struct {
 	ValuePos int
-	Value    string
+	Literal  string
+	Value    interface{}
 }
 
 // NewValue returns a new value node.
-func NewValue(valuePos int, value string) *Value {
+func NewValue(valuePos int, literal string) *Value {
 	return &Value{
 		ValuePos: valuePos,
-		Value:    value,
+		Literal:  literal,
+		Value:    literal,
 	}
 }
 
@@ -18,6 +20,6 @@ func NewValue(valuePos int, value string) *Value {
 func (e *Value) Pos() int { return e.ValuePos }
 
 // End implementations for value nodes.
-func (e *Value) End() int { return e.ValuePos + len(e.Value) }
+func (e *Value) End() int { return e.ValuePos + len(e.Literal) }
 
 func (*Value) exprNode() {}

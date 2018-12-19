@@ -9,12 +9,14 @@ import (
 
 // Insight holds the insight's internal state.
 type Insight struct {
-	params []string
+	params  []string
+	mappers map[string]generator.Mapper
 }
 
 func new() *Insight {
 	return &Insight{
-		params: []string{},
+		params:  []string{},
+		mappers: map[string]generator.Mapper{},
 	}
 }
 
@@ -26,6 +28,17 @@ func Permit(params ...string) *Insight {
 // Permit returns a new insight instance with permitted params.
 func (i *Insight) Permit(params ...string) *Insight {
 	i.params = append(i.params, params...)
+	return i
+}
+
+// Map returns a new insight instance with params mappers.
+func Map(key string, mapper generator.Mapper) *Insight {
+	return new().Map(key, mapper)
+}
+
+// Map returns a new insight instance with params mappers.
+func (i *Insight) Map(key string, mapper generator.Mapper) *Insight {
+	i.mappers[key] = mapper
 	return i
 }
 
@@ -43,6 +56,6 @@ func (i *Insight) Filter(filter string) (clause string, args []interface{}, err 
 	if err != nil {
 		return
 	}
-	clause, args = generator.New(expr, i.params).Generate()
+	clause, args = generator.New(expr, i.params, i.mappers).Generate()
 	return
 }
