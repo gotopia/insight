@@ -9,17 +9,22 @@ import (
 
 // Generator holds the generator's internal state.
 type Generator struct {
-	e      ast.Expr
-	params []string
-	args   []interface{}
+	e       ast.Expr
+	params  []string
+	mappers map[string]Mapper
+	args    []interface{}
 }
 
+// Mapper returns the mapped key-value pair.
+type Mapper func(v string) (key string, value interface{})
+
 // New returns a new generator.
-func New(expr ast.Expr, params []string) *Generator {
+func New(expr ast.Expr, params []string, mappers map[string]Mapper) *Generator {
 	sort.Strings(params)
 	return &Generator{
-		e:      expr,
-		params: params,
+		e:       expr,
+		params:  params,
+		mappers: mappers,
 	}
 }
 
@@ -39,6 +44,13 @@ func (g *Generator) generate(e ast.Expr) string {
 		if x, ok := te.X.(*ast.Ident); ok {
 			if !g.isPermitted(x.Name) {
 				return ""
+			}
+			if y, ok := te.Y.(*ast.Value); ok {
+				if mapper, ok := g.mappers[x.Name]; ok {
+					key, value := mapper(y.Literal)
+					x.Name = key
+					y.Value = value
+				}
 			}
 		}
 		return g.build(g.generate(te.X), te.Op, g.generate(te.Y))
