@@ -11,6 +11,7 @@ import (
 type ParsingError interface {
 	error
 	Pos() int
+	parsingError()
 }
 
 type parsingError struct {
@@ -34,6 +35,8 @@ func (e *parsingError) Error() string {
 func (e *parsingError) Pos() int {
 	return e.pos
 }
+
+func (*parsingError) parsingError() {}
 
 func newParsingError(pos int, unexpected string, expectings ...token.Token) *parsingError {
 	return &parsingError{
