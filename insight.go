@@ -4,19 +4,18 @@ import (
 	"strings"
 
 	"github.com/gotopia/insight/generator"
+	"github.com/gotopia/insight/params"
 	"github.com/gotopia/insight/parser"
 )
 
 // Insight holds the insight's internal state.
 type Insight struct {
-	params  []string
-	mappers map[string]generator.Mapper
+	params *params.Params
 }
 
 func new() *Insight {
 	return &Insight{
-		params:  []string{},
-		mappers: map[string]generator.Mapper{},
+		params: params.NewParams(),
 	}
 }
 
@@ -27,18 +26,18 @@ func Permit(params ...string) *Insight {
 
 // Permit returns a new insight instance with permitted params.
 func (i *Insight) Permit(params ...string) *Insight {
-	i.params = append(i.params, params...)
+	i.params.Permit(params...)
 	return i
 }
 
 // Map returns a new insight instance with params mappers.
-func Map(key string, mapper generator.Mapper) *Insight {
+func Map(key string, mapper params.Mapper) *Insight {
 	return new().Map(key, mapper)
 }
 
 // Map returns a new insight instance with params mappers.
-func (i *Insight) Map(key string, mapper generator.Mapper) *Insight {
-	i.mappers[key] = mapper
+func (i *Insight) Map(key string, mapper params.Mapper) *Insight {
+	i.params.SetMapper(key, mapper)
 	return i
 }
 
@@ -56,6 +55,23 @@ func (i *Insight) Filter(filter string) (clause string, args []interface{}, err 
 	if err != nil {
 		return
 	}
-	clause, args = generator.New(expr, i.params, i.mappers).Generate()
+	clause, args = generator.New(expr, i.params).Generate()
 	return
+}
+
+// OrderBy generates a SQL clause and arguments. If permitted params is not set, it means any parameters are permitted.
+func (i *Insight) OrderBy(orderBy string) string {
+	subs := strings.Split(orderBy, ",")
+	clauses := []string{}
+	for idx := 0; idx < len(subs); idx++ {
+		clause := strings.TrimSpace(subs[idx])
+		pairs := strings.SplitN(clause, " ", 2)
+		old := pairs[0]
+		if i.params.IsPermitted(old) {
+			new, _ := i.params.Convert(old, "")
+			clause = strings.Replace(clause, old, new, 1)
+			clauses = append(clauses, clause)
+		}
+	}
+	return strings.TrimSpace(strings.Join(clauses, ", "))
 }
