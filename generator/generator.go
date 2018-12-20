@@ -1,30 +1,23 @@
 package generator
 
 import (
-	"sort"
-
 	"github.com/gotopia/insight/ast"
+	"github.com/gotopia/insight/params"
 	"github.com/gotopia/insight/token"
 )
 
 // Generator holds the generator's internal state.
 type Generator struct {
-	e       ast.Expr
-	params  []string
-	mappers map[string]Mapper
-	args    []interface{}
+	e      ast.Expr
+	params *params.Params
+	args   []interface{}
 }
 
-// Mapper returns the mapped key-value pair.
-type Mapper func(v string) (key string, value interface{})
-
 // New returns a new generator.
-func New(expr ast.Expr, params []string, mappers map[string]Mapper) *Generator {
-	sort.Strings(params)
+func New(expr ast.Expr, params *params.Params) *Generator {
 	return &Generator{
-		e:       expr,
-		params:  params,
-		mappers: mappers,
+		e:      expr,
+		params: params,
 	}
 }
 
@@ -42,29 +35,17 @@ func (g *Generator) generate(e ast.Expr) string {
 		return "?"
 	case *ast.BinaryExpr:
 		if x, ok := te.X.(*ast.Ident); ok {
-			if !g.isPermitted(x.Name) {
+			if !(g.params.IsPermitted(x.Name)) {
 				return ""
 			}
 			if y, ok := te.Y.(*ast.Value); ok {
-				if mapper, ok := g.mappers[x.Name]; ok {
-					key, value := mapper(y.Literal)
-					x.Name = key
-					y.Value = value
-				}
+				x.Name, y.Value = g.params.Convert(x.Name, y.Literal)
 			}
 		}
 		return g.build(g.generate(te.X), te.Op, g.generate(te.Y))
 	default:
 		return ""
 	}
-}
-
-func (g *Generator) isPermitted(param string) bool {
-	if len(g.params) == 0 {
-		return true
-	}
-	i := sort.SearchStrings(g.params, param)
-	return i < len(g.params) && g.params[i] == param
 }
 
 func (g *Generator) build(x string, op token.Token, y string) string {
