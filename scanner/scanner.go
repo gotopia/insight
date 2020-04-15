@@ -92,11 +92,11 @@ func (s *Scanner) Scan() (pos int, tok token.Token, lit string) {
 		s.lhs = true
 	default:
 		if s.lhs {
-			lit = s.scanIdentifier()
+			lit = s.scanIdentifier(pos)
 			tok = token.IDENT
 			s.lhs = false
 		} else {
-			lit = s.scanValue()
+			lit = s.scanValue(pos)
 			tok = token.VALUE
 			s.lhs = true
 		}
@@ -104,20 +104,18 @@ func (s *Scanner) Scan() (pos int, tok token.Token, lit string) {
 	return
 }
 
-func (s *Scanner) scanIdentifier() string {
-	offs := s.offset
+func (s *Scanner) scanIdentifier(pos int) string {
 	for isLetter(s.ch) || isDigit(s.ch) {
 		s.next()
 	}
-	return string(s.src[offs-1 : s.offset])
+	return string(s.src[pos:s.offset])
 }
 
-func (s *Scanner) scanValue() string {
-	offs := s.offset
+func (s *Scanner) scanValue(pos int) string {
 	for s.ch != ';' && s.ch != ',' && s.ch != -1 {
 		s.next()
 	}
-	return string(s.src[offs-1 : s.offset])
+	return string(s.src[pos:s.offset])
 }
 
 func (s *Scanner) next() {
